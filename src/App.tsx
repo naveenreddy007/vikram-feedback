@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button, Card, PageTransition } from './components/ui'
 import ThreeBackground from './components/ThreeBackground'
@@ -8,6 +8,8 @@ import FeaturesSection from './components/FeaturesSection'
 import AboutSection from './components/AboutSection'
 import StudentInfoForm from './components/StudentInfoForm'
 import FeedbackQuestions from './components/FeedbackQuestions'
+import AdminLogin from './components/AdminLogin'
+import AdminDashboard from './components/AdminDashboard'
 import useResponsive3D from './hooks/useResponsive3D'
 import './App.css'
 
@@ -28,10 +30,30 @@ interface FeedbackData {
 }
 
 function App() {
-  const [currentStep, setCurrentStep] = useState('landing') // landing, form, feedback, success
+  const [currentStep, setCurrentStep] = useState('landing') // landing, form, feedback, success, admin-login, admin-dashboard
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null)
   const [feedbackData, setFeedbackData] = useState<FeedbackData | null>(null)
+  const [adminToken, setAdminToken] = useState<string | null>(null)
+  const [adminUser, setAdminUser] = useState<any>(null)
   const responsive3D = useResponsive3D()
+
+  // Check for existing admin session on app load
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken')
+    const user = localStorage.getItem('adminUser')
+    
+    if (token && user) {
+      setAdminToken(token)
+      setAdminUser(JSON.parse(user))
+      setCurrentStep('admin-dashboard')
+    }
+
+    // Check URL for admin access
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('admin') === 'true') {
+      setCurrentStep('admin-login')
+    }
+  }, [])
 
   const handleStartReview = () => {
     setCurrentStep('form')
@@ -49,6 +71,20 @@ function App() {
   const handleFeedbackSubmit = (data: FeedbackData) => {
     setFeedbackData(data)
     setCurrentStep('success')
+  }
+
+  const handleAdminLogin = (token: string, user: any) => {
+    setAdminToken(token)
+    setAdminUser(user)
+    setCurrentStep('admin-dashboard')
+  }
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminUser')
+    setAdminToken(null)
+    setAdminUser(null)
+    setCurrentStep('landing')
   }
 
   return (
@@ -136,17 +172,42 @@ function App() {
                   </div>
                 </div>
                 
-                <Button 
-                  variant="primary"
-                  size="lg"
-                  onClick={handleBackToLanding}
-                  className="lewish-text"
-                >
-                  RETURN HOME ✨
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button 
+                    variant="primary"
+                    size="lg"
+                    onClick={handleBackToLanding}
+                    className="lewish-text"
+                  >
+                    RETURN HOME ✨
+                  </Button>
+                  
+                  <Button 
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => setCurrentStep('admin-login')}
+                    className="lewish-text"
+                  >
+                    ADMIN LOGIN 🔐
+                  </Button>
+                </div>
               </Card>
             </div>
           </div>
+        )}
+
+        {currentStep === 'admin-login' && (
+          <AdminLogin
+            onLogin={handleAdminLogin}
+            onBack={handleBackToLanding}
+          />
+        )}
+
+        {currentStep === 'admin-dashboard' && adminUser && (
+          <AdminDashboard
+            adminUser={adminUser}
+            onLogout={handleAdminLogout}
+          />
         )}
       </div>
     </PageTransition>

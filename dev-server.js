@@ -1,10 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
 const prisma = new PrismaClient();
 const PORT = 3001;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-for-development';
 
 // Middleware
 app.use(cors());
@@ -62,6 +65,38 @@ const validateFeedback = (data) => {
   }
 
   return { isValid: errors.length === 0, errors };
+};
+
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: 'NO_TOKEN',
+        message: 'Access token is required'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'INVALID_TOKEN',
+          message: 'Invalid or expired token'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+    req.user = user;
+    next();
+  });
 };
 
 // Routes
@@ -190,6 +225,248 @@ app.get('/api/feedback', async (req, res) => {
   } catch (error) {
     console.error('Error fetching feedback:', error);
     
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Authentication routes
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'MISSING_CREDENTIALS',
+          message: 'Username and password are required'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Find admin user
+    const admin = await prisma.adminUser.findUnique({
+      where: { username }
+    });
+
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'INVALID_CREDENTIALS',
+          message: 'Invalid username or password'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
+
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'INVALID_CREDENTIALS',
+          message: 'Invalid username or password'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Update last login
+    await prisma.adminUser.update({
+      where: { id: admin.id },
+      data: { lastLogin: new Date() }
+    });
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: admin.id, 
+        username: admin.username, 
+        role: admin.role 
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        token,
+        user: {
+          id: admin.id,
+          username: admin.username,
+          role: admin.role,
+          lastLogin: admin.lastLogin
+        }
+      },
+      message: 'Login successful',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.post('/api/auth/logout', authenticateToken, (req, res) => {
+  // In a real application, you might want to blacklist the token
+  // For now, we'll just return a success response
+  res.status(200).json({
+    success: true,
+    message: 'Logout successful',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/auth/verify', authenticateToken, async (req, res) => {
+  try {
+    const admin = await prisma.adminUser.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        lastLogin: true,
+        createdAt: true
+      }
+    });
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        user: admin
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Verify token error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Protected feedback routes (admin only)
+app.get('/api/admin/feedback', authenticateToken, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalFeedback = await prisma.studentFeedback.count();
+    
+    const feedback = await prisma.studentFeedback.findMany({
+      skip,
+      take: limit,
+      orderBy: {
+        submittedAt: 'desc'
+      }
+    });
+
+    const averageRatings = await prisma.studentFeedback.aggregate({
+      _avg: {
+        teachingSkills: true,
+        realWorldExplanation: true,
+        overallSatisfaction: true
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        feedback,
+        totalFeedback,
+        currentPage: page,
+        totalPages: Math.ceil(totalFeedback / limit),
+        averageRatings: {
+          teachingSkills: Number(averageRatings._avg.teachingSkills?.toFixed(1)) || 0,
+          realWorldExplanation: Number(averageRatings._avg.realWorldExplanation?.toFixed(1)) || 0,
+          overallSatisfaction: Number(averageRatings._avg.overallSatisfaction?.toFixed(1)) || 0
+        }
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error fetching admin feedback:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.delete('/api/admin/feedback/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const feedback = await prisma.studentFeedback.findUnique({
+      where: { id }
+    });
+
+    if (!feedback) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'FEEDBACK_NOT_FOUND',
+          message: 'Feedback not found'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    await prisma.studentFeedback.delete({
+      where: { id }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Feedback deleted successfully',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error deleting feedback:', error);
     return res.status(500).json({
       success: false,
       error: {

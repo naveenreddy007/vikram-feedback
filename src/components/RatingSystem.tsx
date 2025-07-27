@@ -112,30 +112,34 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
             const isHovered = rating <= hoveredRating;
             const isSelected = rating <= selectedRating;
 
+            const getButtonStyles = () => {
+              if (isActive) {
+                if (motivationalMessage.color === 'accent-green') {
+                  return 'bg-accent-green border-accent-green text-black shadow-lg';
+                } else if (motivationalMessage.color === 'accent-blue') {
+                  return 'bg-accent-blue border-accent-blue text-black shadow-lg';
+                } else if (motivationalMessage.color === 'accent-orange') {
+                  return 'bg-accent-orange border-accent-orange text-black shadow-lg';
+                }
+              }
+              return 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400';
+            };
+
             return (
               <motion.button
                 key={rating}
                 className={`
                   relative w-12 h-12 md:w-16 md:h-16 rounded-full border-2 font-bold text-lg md:text-xl
                   transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary-dark
-                  ${isActive 
-                    ? `bg-${motivationalMessage.color} border-${motivationalMessage.color} text-black shadow-lg` 
-                    : 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400'
-                  }
+                  ${getButtonStyles()}
                 `}
                 whileHover={{ 
                   scale: 1.1,
-                  boxShadow: isActive ? `0 0 20px var(--color-${motivationalMessage.color})` : '0 0 10px rgba(255,255,255,0.3)'
                 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleRatingClick(rating)}
                 onMouseEnter={() => handleRatingHover(rating)}
                 onMouseLeave={() => setHoveredRating(0)}
-                animate={{
-                  backgroundColor: isActive ? `var(--color-${motivationalMessage.color})` : 'transparent',
-                  borderColor: isActive ? `var(--color-${motivationalMessage.color})` : '#6b7280',
-                  color: isActive ? '#000000' : '#9ca3af'
-                }}
               >
                 {rating}
                 
@@ -180,14 +184,13 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
               transition={{ duration: 0.3 }}
             >
               <motion.div
-                className={`text-6xl md:text-8xl font-bold text-${motivationalMessage.color} mb-2`}
+                className={`text-6xl md:text-8xl font-bold mb-2 ${
+                  motivationalMessage.color === 'accent-green' ? 'text-accent-green' :
+                  motivationalMessage.color === 'accent-blue' ? 'text-accent-blue' :
+                  'text-accent-orange'
+                }`}
                 animate={{ 
-                  scale: [1, 1.1, 1],
-                  textShadow: [
-                    `0 0 10px var(--color-${motivationalMessage.color})`,
-                    `0 0 30px var(--color-${motivationalMessage.color})`,
-                    `0 0 10px var(--color-${motivationalMessage.color})`
-                  ]
+                  scale: [1, 1.1, 1]
                 }}
                 transition={{ duration: 0.6 }}
               >
@@ -211,13 +214,21 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <motion.div
-                className={`inline-block px-6 py-3 rounded-full glass-dark border border-${motivationalMessage.color}/30`}
+                className={`inline-block px-6 py-3 rounded-full glass-dark border ${
+                  motivationalMessage.color === 'accent-green' ? 'border-accent-green/30' :
+                  motivationalMessage.color === 'accent-blue' ? 'border-accent-blue/30' :
+                  'border-accent-orange/30'
+                }`}
                 animate={{
                   boxShadow: `0 0 20px rgba(0, 212, 255, 0.2)`
                 }}
               >
                 <motion.p
-                  className={`text-${motivationalMessage.color} font-semibold text-lg`}
+                  className={`font-semibold text-lg ${
+                    motivationalMessage.color === 'accent-green' ? 'text-accent-green' :
+                    motivationalMessage.color === 'accent-blue' ? 'text-accent-blue' :
+                    'text-accent-orange'
+                  }`}
                   animate={{
                     scale: [1, 1.05, 1]
                   }}
@@ -238,7 +249,11 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
               {Array.from({ length: Math.min(currentDisplayRating, 5) }, (_, i) => (
                 <motion.div
                   key={i}
-                  className={`absolute w-4 h-4 bg-${motivationalMessage.color}/20 rounded-full`}
+                  className={`absolute w-4 h-4 rounded-full ${
+                    motivationalMessage.color === 'accent-green' ? 'bg-accent-green/20' :
+                    motivationalMessage.color === 'accent-blue' ? 'bg-accent-blue/20' :
+                    'bg-accent-orange/20'
+                  }`}
                   style={{
                     left: `${20 + i * 15}%`,
                     top: `${30 + (i % 2) * 40}%`
@@ -271,7 +286,11 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
             transition={{ duration: 0.3 }}
           >
             <p className="text-gray-300">
-              You rated this <span className={`text-${motivationalMessage.color} font-semibold`}>
+              You rated this <span className={`font-semibold ${
+                motivationalMessage.color === 'accent-green' ? 'text-accent-green' :
+                motivationalMessage.color === 'accent-blue' ? 'text-accent-blue' :
+                'text-accent-orange'
+              }`}>
                 {selectedRating} out of {maxRating}
               </span>
             </p>
