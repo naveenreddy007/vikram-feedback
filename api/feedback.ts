@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 // Types
+// @ts-ignore
 interface StudentFeedback {
   name: string;
   email?: string;
