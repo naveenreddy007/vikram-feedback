@@ -63,6 +63,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -74,7 +75,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
       setError(null);
 
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:3001/api/admin/feedback', {
+      const response = await fetch('/api/admin/dashboard', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -96,6 +97,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
     }
   };
 
+  const handleExport = async (format: 'json' | 'csv') => {
+    try {
+      setIsExporting(true);
+      const token = localStorage.getItem('adminToken');
+      
+      const response = await fetch(`/api/admin/export?format=${format}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `feedback-export-${new Date().toISOString().split('T')[0]}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        throw new Error('Export failed');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      setError('Failed to export data');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const getAverageRatingColor = (rating: number) => {
     if (rating >= 8) return 'text-accent-green';
     if (rating >= 6) return 'text-accent-blue';
@@ -109,9 +142,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
       {
         label: 'Average Ratings',
         data: stats ? [
-          stats.averageRatings.teachingSkills,
-          stats.averageRatings.realWorldExplanation,
-          stats.averageRatings.overallSatisfaction,
+          stats.overview.averageRatings.teachingSkills,
+          stats.overview.averageRatings.realWorldExplanation,
+          stats.overview.averageRatings.overallSatisfaction,
         ] : [],
         backgroundColor: [
           'rgba(0, 212, 255, 0.8)',
@@ -129,12 +162,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
   };
 
   const paceChartData = {
-    labels: stats?.teachingPaceStats.map(item => 
+    labels: stats?.stats.teachingPace.map(item => 
       item.teachingPace.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
     ) || [],
     datasets: [
       {
-        data: stats?.teachingPaceStats.map(item => item._count.teachingPace) || [],
+        data: stats?.stats.teachingPace.map(item => item._count.teachingPace) || [],
         backgroundColor: [
           'rgba(255, 107, 53, 0.8)',
           'rgba(57, 255, 20, 0.8)',
@@ -151,10 +184,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
   };
 
   const deviceChartData = {
-    labels: stats?.deviceStats.map(item => item.deviceType) || [],
+    labels: stats?.stats.deviceType.map(item => item.deviceType) || [],
     datasets: [
       {
-        data: stats?.deviceStats.map(item => item._count.deviceType) || [],
+        data: stats?.stats.deviceType.map(item => item._count.deviceType) || [],
         backgroundColor: [
           'rgba(0, 212, 255, 0.8)',
           'rgba(57, 255, 20, 0.8)',
@@ -256,13 +289,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
               ADMIN DASHBOARD
             </h1>
             <p className="text-gray-300">
-              Welcome back, <span className="text-accent-green font-semibold">{adminUser.username}</span>!
+              Welcome back, <span className="text-accent-green font-semibold">{adminUser?.username || 'Admin'}</span>!
             </p>
           </div>
           
           <div className="flex gap-4">
             <Button variant="secondary" onClick={fetchDashboardData}>
               🔄 Refresh
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={() => handleExport('csv')}
+              disabled={isExporting}
+            >
+              📊 Export CSV
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={() => handleExport('json')}
+              disabled={isExporting}
+            >
+              📄 Export JSON
             </Button>
             <Button variant="secondary" onClick={onLogout}>
               ← Logout
@@ -303,31 +350,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
                 <Card variant="glass" className="p-6 text-center">
                   <div className="text-3xl mb-2">📝</div>
                   <div className="text-2xl font-bold text-accent-blue mb-1">
-                    {stats?.totalFeedback || 0}
+                    {stats?.overview.totalFeedback || 0}
                   </div>
                   <div className="text-gray-400 text-sm">Total Feedback</div>
                 </Card>
 
                 <Card variant="glass" className="p-6 text-center">
                   <div className="text-3xl mb-2">⭐</div>
-                  <div className={`text-2xl font-bold mb-1 ${getAverageRatingColor(stats?.averageRatings.teachingSkills || 0)}`}>
-                    {stats?.averageRatings.teachingSkills.toFixed(1) || '0.0'}
+                  <div className={`text-2xl font-bold mb-1 ${getAverageRatingColor(stats?.overview.averageRatings.teachingSkills || 0)}`}>
+                    {stats?.overview.averageRatings.teachingSkills?.toFixed(1) || '0.0'}
                   </div>
                   <div className="text-gray-400 text-sm">Teaching Skills</div>
                 </Card>
 
                 <Card variant="glass" className="p-6 text-center">
                   <div className="text-3xl mb-2">🌍</div>
-                  <div className={`text-2xl font-bold mb-1 ${getAverageRatingColor(stats?.averageRatings.realWorldExplanation || 0)}`}>
-                    {stats?.averageRatings.realWorldExplanation.toFixed(1) || '0.0'}
+                  <div className={`text-2xl font-bold mb-1 ${getAverageRatingColor(stats?.overview.averageRatings.realWorldExplanation || 0)}`}>
+                    {stats?.overview.averageRatings.realWorldExplanation?.toFixed(1) || '0.0'}
                   </div>
                   <div className="text-gray-400 text-sm">Real-World Explanation</div>
                 </Card>
 
                 <Card variant="glass" className="p-6 text-center">
                   <div className="text-3xl mb-2">😊</div>
-                  <div className={`text-2xl font-bold mb-1 ${getAverageRatingColor(stats?.averageRatings.overallSatisfaction || 0)}`}>
-                    {stats?.averageRatings.overallSatisfaction.toFixed(1) || '0.0'}
+                  <div className={`text-2xl font-bold mb-1 ${getAverageRatingColor(stats?.overview.averageRatings.overallSatisfaction || 0)}`}>
+                    {stats?.overview.averageRatings.overallSatisfaction?.toFixed(1) || '0.0'}
                   </div>
                   <div className="text-gray-400 text-sm">Overall Satisfaction</div>
                 </Card>
@@ -341,12 +388,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
                     <h4 className="font-semibold mb-2">Performance Summary</h4>
                     <ul className="space-y-2 text-sm text-gray-300">
                       <li>• Average rating across all categories: <span className="text-accent-blue font-semibold">
-                        {stats ? ((stats.averageRatings.teachingSkills + stats.averageRatings.realWorldExplanation + stats.averageRatings.overallSatisfaction) / 3).toFixed(1) : '0.0'}
+                        {stats ? ((stats.overview.averageRatings.teachingSkills + stats.overview.averageRatings.realWorldExplanation + stats.overview.averageRatings.overallSatisfaction) / 3).toFixed(1) : '0.0'}
                       </span></li>
-                      <li>• Total feedback submissions: <span className="text-accent-green font-semibold">{stats?.totalFeedback || 0}</span></li>
+                      <li>• Total feedback submissions: <span className="text-accent-green font-semibold">{stats?.overview.totalFeedback || 0}</span></li>
                       <li>• Highest rated area: <span className="text-accent-orange font-semibold">
-                        {stats && Math.max(stats.averageRatings.teachingSkills, stats.averageRatings.realWorldExplanation, stats.averageRatings.overallSatisfaction) === stats.averageRatings.teachingSkills ? 'Teaching Skills' :
-                         Math.max(stats.averageRatings.teachingSkills, stats.averageRatings.realWorldExplanation, stats.averageRatings.overallSatisfaction) === stats.averageRatings.realWorldExplanation ? 'Real-World Explanation' : 'Overall Satisfaction'}
+                        {stats && Math.max(stats.overview.averageRatings.teachingSkills, stats.overview.averageRatings.realWorldExplanation, stats.overview.averageRatings.overallSatisfaction) === stats.overview.averageRatings.teachingSkills ? 'Teaching Skills' :
+                         Math.max(stats.overview.averageRatings.teachingSkills, stats.overview.averageRatings.realWorldExplanation, stats.overview.averageRatings.overallSatisfaction) === stats.overview.averageRatings.realWorldExplanation ? 'Real-World Explanation' : 'Overall Satisfaction'}
                       </span></li>
                     </ul>
                   </div>

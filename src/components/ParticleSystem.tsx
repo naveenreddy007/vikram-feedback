@@ -71,7 +71,7 @@ const ParticleSystem: React.FC<ParticleSystemProps> = ({
       }
 
       geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
       geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
       // Custom shader material for better particle rendering
@@ -82,13 +82,13 @@ const ParticleSystem: React.FC<ParticleSystemProps> = ({
         },
         vertexShader: `
           attribute float size;
-          attribute vec3 color;
-          varying vec3 vColor;
+          attribute vec3 customColor;
+        varying vec3 vColor;
           uniform float time;
           uniform vec2 mouse;
           
           void main() {
-            vColor = color;
+            vColor = customColor;
             vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
             
             // Add some wave motion

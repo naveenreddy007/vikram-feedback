@@ -31,12 +31,13 @@ model StudentFeedback {
 }
 
 model AdminUser {
-  id           String    @id @default(cuid())
-  username     String    @unique
+  id           String        @id @default(cuid())
+  username     String        @unique
   passwordHash String
-  role         String    @default("admin")
+  role         String        @default("admin")
   lastLogin    DateTime?
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime      @default(now())
+  dailyReviews DailyReview[]
   
   @@map("admin_users")
 }
@@ -51,4 +52,44 @@ enum DeviceType {
   MOBILE
   DESKTOP
   TABLET
+}
+
+model Question {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  type        QuestionType
+  options     String[]    // For multiple choice questions
+  required    Boolean     @default(true)
+  order       Int         @default(0)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  @@map("questions")
+}
+
+model DailyReview {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  date        DateTime
+  tags        String[]
+  isPublished Boolean  @default(false)
+  authorId    String
+  author      AdminUser @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("daily_reviews")
+}
+
+enum QuestionType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  RATING
+  MULTIPLE_CHOICE
+  CHECKBOX
+  BOOLEAN
 }

@@ -37,8 +37,8 @@ class ApiService {
   private isDevelopment: boolean;
 
   constructor() {
-    this.isDevelopment = import.meta.env.DEV;
-    this.baseUrl = this.isDevelopment ? 'http://localhost:3001' : 'https://your-domain.com';
+    this.isDevelopment = process.env.NODE_ENV === 'development';
+    this.baseUrl = this.isDevelopment ? 'http://localhost:3000' : 'https://your-domain.com';
   }
 
   private async request<T>(
