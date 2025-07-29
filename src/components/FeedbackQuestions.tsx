@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Card } from './ui';
 import RatingSystem from './RatingSystem';
@@ -95,7 +95,7 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
       id: 'futureTopics',
       type: 'text',
       question: 'What topics would you like me to cover in the future?',
-      description: 'Suggest any engineering topics or technologies you\'re interested in',
+      description: "Suggest any engineering topics or technologies you're interested in",
       key: 'futureTopics' as keyof FeedbackData,
       multiline: true
     },
@@ -153,7 +153,7 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
   const canProceed = () => {
     const current = feedbackData[currentQuestionData.key];
     if (currentQuestionData.type === 'rating') {
-      return current > 0;
+      return typeof current === 'number' && current > 0;
     }
     if (currentQuestionData.type === 'boolean' || currentQuestionData.type === 'choice') {
       return current !== null;
@@ -191,6 +191,8 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
       const submitData = {
         ...studentInfo,
         ...feedbackData,
+        realWorldTopics: feedbackData.realWorldTopics ?? false,
+        teachingPace: feedbackData.teachingPace ?? 'PERFECT',
         sessionDuration
       };
 
@@ -263,10 +265,10 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
               <InteractiveToggle
                 options={[
                   { value: true, label: 'Yes, Please!', icon: '👍', color: 'accent-green', description: 'I would love more real-world examples' },
-                  { value: false, label: 'No, Thanks', icon: '👎', color: 'accent-orange', description: 'Current balance is perfect' }
+                  { value: false, label: "No, Thanks", icon: "👎", color: "accent-orange", description: "Current balance is perfect" }
                 ]}
                 value={feedbackData[currentQuestionData.key] as boolean}
-                onChange={handleBooleanChoice}
+                onChange={(value) => handleBooleanChoice(value as boolean)}
                 variant="cards"
                 className="max-w-2xl mx-auto"
               />
@@ -321,7 +323,7 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
                               'Could go a bit faster'
                 })) || []}
                 value={feedbackData[currentQuestionData.key] as string}
-                onChange={handleChoiceSelect}
+                onChange={(value) => handleChoiceSelect(value as string)}
                 variant="cards"
                 className="max-w-3xl mx-auto"
               />

@@ -46,7 +46,7 @@ const Hero: React.FC<HeroProps> = ({ onStartReview }) => {
       transition: {
         duration: 6,
         repeat: Infinity,
-        ease: "easeInOut"
+        ease: "easeInOut" as const
       }
     }
   };

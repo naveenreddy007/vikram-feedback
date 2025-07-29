@@ -95,4 +95,35 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
           content,
           date: new Date(date),
           tags: tags || [],
-          isPublishe
+          isPublished: isPublished || false
+        },
+        include: {
+          author: {
+            select: { id: true, username: true }
+          }
+        }
+      });
+      
+      return res.status(200).json({
+        success: true,
+        data: review,
+        message: 'Daily review updated successfully',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to update daily review' },
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+  
+  return res.status(405).json({
+    success: false,
+    error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed' },
+    timestamp: new Date().toISOString()
+  });
+}
+
+export default withAuth(handler);

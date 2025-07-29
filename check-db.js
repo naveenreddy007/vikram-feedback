@@ -27,6 +27,30 @@ async function checkAdmin() {
     const adminCount = await prisma.adminUser.count();
     console.log(`Total admin users: ${adminCount}`);
     
+    // Check feedback entries
+    console.log('\nChecking feedback entries...');
+    const feedbackCount = await prisma.studentFeedback.count();
+    console.log(`Total feedback entries: ${feedbackCount}`);
+    
+    if (feedbackCount > 0) {
+      const recentFeedback = await prisma.studentFeedback.findMany({
+        take: 3,
+        orderBy: { submittedAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          overallSatisfaction: true,
+          submittedAt: true
+        }
+      });
+      console.log('Recent feedback entries:');
+      recentFeedback.forEach(feedback => {
+        console.log(`- ${feedback.name}: ${feedback.overallSatisfaction}/10 (${feedback.submittedAt})`);
+      });
+    } else {
+      console.log('No feedback entries found in database');
+    }
+    
   } catch (error) {
     console.error('❌ Database error:', error.message);
   } finally {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useHapticFeedback from '../hooks/useHapticFeedback';
 
@@ -109,7 +109,6 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
           {Array.from({ length: maxRating }, (_, index) => {
             const rating = index + 1;
             const isActive = rating <= currentDisplayRating;
-            const isHovered = rating <= hoveredRating;
             const isSelected = rating <= selectedRating;
 
             const getButtonStyles = () => {

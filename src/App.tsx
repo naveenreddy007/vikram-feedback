@@ -19,21 +19,11 @@ interface StudentInfo {
   phoneNumber: string;
 }
 
-interface FeedbackData {
-  teachingSkills: number;
-  realWorldExplanation: number;
-  overallSatisfaction: number;
-  realWorldTopics: boolean | null;
-  futureTopics: string[];
-  teachingPace: 'TOO_FAST' | 'PERFECT' | 'TOO_SLOW' | null;
-  additionalComments: string;
-}
+
 
 function App() {
   const [currentStep, setCurrentStep] = useState('landing') // landing, form, feedback, success, admin-login, admin-dashboard
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null)
-  const [feedbackData, setFeedbackData] = useState<FeedbackData | null>(null)
-  const [adminToken, setAdminToken] = useState<string | null>(null)
   const [adminUser, setAdminUser] = useState<any>(null)
   const responsive3D = useResponsive3D()
 
@@ -43,7 +33,6 @@ function App() {
     const user = localStorage.getItem('adminUser')
     
     if (token && user) {
-      setAdminToken(token)
       setAdminUser(JSON.parse(user))
       setCurrentStep('admin-dashboard')
     }
@@ -68,13 +57,11 @@ function App() {
     setCurrentStep('landing')
   }
 
-  const handleFeedbackSubmit = (data: FeedbackData) => {
-    setFeedbackData(data)
+  const handleFeedbackSubmit = () => {
     setCurrentStep('success')
   }
 
-  const handleAdminLogin = (token: string, user: any) => {
-    setAdminToken(token)
+  const handleAdminLogin = (user: any) => {
     setAdminUser(user)
     setCurrentStep('admin-dashboard')
   }
@@ -82,7 +69,6 @@ function App() {
   const handleAdminLogout = () => {
     localStorage.removeItem('adminToken')
     localStorage.removeItem('adminUser')
-    setAdminToken(null)
     setAdminUser(null)
     setCurrentStep('landing')
   }

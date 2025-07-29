@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-type HapticPattern = 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'warning';
+type HapticPattern = 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'warning' | 'tap' | 'click' | 'doubleClick' | 'longPress' | 'notification';
 
 interface HapticPatterns {
   [key: string]: number | number[];

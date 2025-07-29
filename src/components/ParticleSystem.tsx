@@ -135,7 +135,7 @@ const ParticleSystem: React.FC<ParticleSystemProps> = ({
       return { particles, material, positions, velocities };
     };
 
-    const { particles, material, positions, velocities } = createEngineeringParticles();
+    const { particles, material, velocities } = createEngineeringParticles();
 
     // Mouse interaction
     const handleMouseMove = (event: MouseEvent) => {

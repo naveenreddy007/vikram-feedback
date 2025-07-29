@@ -111,7 +111,7 @@ const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = '' }) => 
         'ΔH = ΔU + PΔV'
       ];
 
-      equations.forEach((equation, index) => {
+      equations.forEach((equation) => {
         // Create canvas for text
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d')!;

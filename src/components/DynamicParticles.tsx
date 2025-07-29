@@ -60,7 +60,7 @@ const DynamicParticles: React.FC<DynamicParticlesProps> = ({
     if (trigger) {
       const newParticles = Array.from({ length: Math.floor(20 * intensity) }, () => 
         createParticle()
-      ).filter(Boolean);
+      ).filter((particle): particle is NonNullable<typeof particle> => particle !== null);
       
       setParticles(prev => [...prev, ...newParticles]);
     }

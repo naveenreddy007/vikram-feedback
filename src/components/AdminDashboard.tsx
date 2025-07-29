@@ -12,7 +12,7 @@ import {
   PointElement,
   LineElement,
 } from 'chart.js';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import { Bar, Doughnut } from 'react-chartjs-2';
 import { Button, Card, LoadingSpinner } from './ui';
 
 // Register Chart.js components
@@ -34,20 +34,24 @@ interface AdminDashboardProps {
 }
 
 interface FeedbackStats {
-  totalFeedback: number;
-  averageRatings: {
-    teachingSkills: number;
-    realWorldExplanation: number;
-    overallSatisfaction: number;
+  overview: {
+    totalFeedback: number;
+    averageRatings: {
+      teachingSkills: number;
+      realWorldExplanation: number;
+      overallSatisfaction: number;
+    };
   };
-  teachingPaceStats: Array<{
-    teachingPace: string;
-    _count: { teachingPace: number };
-  }>;
-  deviceStats: Array<{
-    deviceType: string;
-    _count: { deviceType: number };
-  }>;
+  stats: {
+    teachingPace: Array<{
+      teachingPace: string;
+      _count: { teachingPace: number };
+    }>;
+    deviceType: Array<{
+      deviceType: string;
+      _count: { deviceType: number };
+    }>;
+  };
   recentFeedback: Array<{
     id: string;
     name: string;
@@ -392,8 +396,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ adminUser, onLogout }) 
                       </span></li>
                       <li>• Total feedback submissions: <span className="text-accent-green font-semibold">{stats?.overview.totalFeedback || 0}</span></li>
                       <li>• Highest rated area: <span className="text-accent-orange font-semibold">
-                        {stats && Math.max(stats.overview.averageRatings.teachingSkills, stats.overview.averageRatings.realWorldExplanation, stats.overview.averageRatings.overallSatisfaction) === stats.overview.averageRatings.teachingSkills ? 'Teaching Skills' :
-                         Math.max(stats.overview.averageRatings.teachingSkills, stats.overview.averageRatings.realWorldExplanation, stats.overview.averageRatings.overallSatisfaction) === stats.overview.averageRatings.realWorldExplanation ? 'Real-World Explanation' : 'Overall Satisfaction'}
+                        {stats ? (
+                          Math.max(stats.overview.averageRatings.teachingSkills, stats.overview.averageRatings.realWorldExplanation, stats.overview.averageRatings.overallSatisfaction) === stats.overview.averageRatings.teachingSkills ? 'Teaching Skills' :
+                          Math.max(stats.overview.averageRatings.teachingSkills, stats.overview.averageRatings.realWorldExplanation, stats.overview.averageRatings.overallSatisfaction) === stats.overview.averageRatings.realWorldExplanation ? 'Real-World Explanation' : 'Overall Satisfaction'
+                        ) : 'N/A'}
                       </span></li>
                     </ul>
                   </div>

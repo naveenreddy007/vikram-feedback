@@ -52,7 +52,7 @@ const FeaturesSection: React.FC = () => {
       y: 0,
       scale: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 12
       }

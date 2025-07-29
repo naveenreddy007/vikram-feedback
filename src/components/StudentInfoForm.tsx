@@ -98,7 +98,7 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({ onNext, onBack }) => 
 
     // Progressive revelation - move to next field when current is valid
     const currentField = formFields[currentStep];
-    if (currentField.key === key && !error && value.trim()) {
+    if (currentField && currentField.key === key && !error && value.trim()) {
       if (currentStep < formFields.length - 1) {
         setTimeout(() => {
           setCurrentStep(prev => prev + 1);
@@ -180,7 +180,7 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({ onNext, onBack }) => 
       y: 0,
       scale: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 15
       }
