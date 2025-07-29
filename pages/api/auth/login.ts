@@ -7,16 +7,28 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-for-development';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.setHeader('Allow', ['POST', 'OPTIONS']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return;
   }
 
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           code: 'MISSING_CREDENTIALS',
@@ -24,6 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         timestamp: new Date().toISOString()
       });
+      return;
     }
 
     // Find admin user
@@ -32,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!adminUser) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: {
           code: 'INVALID_CREDENTIALS',
@@ -46,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const isValidPassword = await bcrypt.compare(password, adminUser.passwordHash);
 
     if (!isValidPassword) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: {
           code: 'INVALID_CREDENTIALS',
@@ -73,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { expiresIn: '24h' }
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: {
         token,
@@ -87,10 +100,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       message: 'Login successful',
       timestamp: new Date().toISOString()
     });
+    return;
 
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_SERVER_ERROR',
@@ -98,5 +112,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       timestamp: new Date().toISOString()
     });
+    return;
   }
 }

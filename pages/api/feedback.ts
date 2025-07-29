@@ -7,12 +7,24 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-for-development';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   if (req.method === 'POST') {
     // Copy the POST logic from dev-server.js
     try {
       const { isValid, errors } = validateFeedback(req.body);
       if (!isValid) {
-        return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid data provided', details: errors }, timestamp: new Date().toISOString() });
+        res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid data provided', details: errors }, timestamp: new Date().toISOString() });
+        return;
       }
       const userAgent = req.headers['user-agent'] || '';
       const deviceType = getDeviceType(userAgent);
@@ -33,9 +45,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           sessionDuration: req.body.sessionDuration || 0,
         }
       });
-      return res.status(201).json({ success: true, data: { id: feedback.id, submittedAt: feedback.submittedAt }, message: 'Feedback submitted successfully', timestamp: new Date().toISOString() });
+      res.status(201).json({ success: true, data: { id: feedback.id, submittedAt: feedback.submittedAt }, message: 'Feedback submitted successfully', timestamp: new Date().toISOString() });
+      return;
     } catch (error) {
-      return res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' }, timestamp: new Date().toISOString() });
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' }, timestamp: new Date().toISOString() });
+      return;
     }
   } else if (req.method === 'GET') {
     // Copy the GET logic
@@ -45,13 +59,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const teachingPaceStats = await prisma.studentFeedback.groupBy({ by: ['teachingPace'], _count: { teachingPace: true } });
       const deviceStats = await prisma.studentFeedback.groupBy({ by: ['deviceType'], _count: { deviceType: true } });
       const recentFeedback = await prisma.studentFeedback.findMany({ take: 5, orderBy: { submittedAt: 'desc' }, select: { id: true, name: true, submittedAt: true, overallSatisfaction: true } });
-      return res.status(200).json({ success: true, data: { totalFeedback, averageRatings: averageRatings._avg, teachingPaceStats, deviceStats, recentFeedback }, timestamp: new Date().toISOString() });
+      res.status(200).json({ success: true, data: { totalFeedback, averageRatings: averageRatings._avg, teachingPaceStats, deviceStats, recentFeedback }, timestamp: new Date().toISOString() });
+      return;
     } catch (error) {
-      return res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' }, timestamp: new Date().toISOString() });
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' }, timestamp: new Date().toISOString() });
+      return;
     }
   } else {
-    res.setHeader('Allow', ['POST', 'GET']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.setHeader('Allow', ['POST', 'GET', 'OPTIONS']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return;
   }
 }
 
