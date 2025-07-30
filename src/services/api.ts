@@ -38,7 +38,7 @@ class ApiService {
 
   constructor() {
     this.isDevelopment = process.env.NODE_ENV === 'development';
-    this.baseUrl = this.isDevelopment ? 'http://localhost:3000' : 'https://vikram-feedback.vercel.app/';
+    this.baseUrl = this.isDevelopment ? 'https://vikram-feedback.vercel.app/' : 'https://vikram-feedback.vercel.app/';
   }
 
   private async request<T>(

@@ -19,7 +19,6 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
   currentRating = 0,
   showMotivationalMessage = true
 }) => {
-  const [hoveredRating, setHoveredRating] = useState(0);
   const [selectedRating, setSelectedRating] = useState(currentRating);
   const [showParticles, setShowParticles] = useState(false);
   const { feedback } = useHapticFeedback();
@@ -41,23 +40,18 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
     
     // Trigger particle effect
     setShowParticles(true);
-    setTimeout(() => setShowParticles(false), 1000);
+    setTimeout(() => setShowParticles(false), 800);
   };
 
-  const handleRatingHover = (rating: number) => {
-    setHoveredRating(rating);
-    feedback.tap();
-  };
-
-  const currentDisplayRating = hoveredRating || selectedRating;
+  const currentDisplayRating = selectedRating;
   const motivationalMessage = getMotivationalMessage(currentDisplayRating);
 
-  // Generate particles for animation
+  // Generate contained particles for animation
   const generateParticles = () => {
-    return Array.from({ length: 12 }, (_, i) => (
+    return Array.from({ length: 8 }, (_, i) => (
       <motion.div
         key={i}
-        className="absolute w-2 h-2 bg-accent-blue rounded-full"
+        className="absolute w-1.5 h-1.5 bg-accent-blue rounded-full"
         initial={{
           x: 0,
           y: 0,
@@ -65,13 +59,13 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
           opacity: 1
         }}
         animate={{
-          x: (Math.random() - 0.5) * 200,
-          y: (Math.random() - 0.5) * 200,
+          x: (Math.random() - 0.5) * 60,
+          y: (Math.random() - 0.5) * 60,
           scale: [0, 1, 0],
-          opacity: [1, 1, 0]
+          opacity: [1, 0.8, 0]
         }}
         transition={{
-          duration: 1,
+          duration: 0.8,
           delay: i * 0.05,
           ease: "easeOut"
         }}
@@ -80,32 +74,22 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto overflow-hidden">
       {/* Question */}
-      <motion.div
-        className="text-center mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 lewish-text">
+      <div className="text-center mb-6">
+        <h3 className="text-xl md:text-2xl font-bold text-white mb-3 lewish-text">
           {question}
         </h3>
         {description && (
-          <p className="text-gray-300 text-lg">
+          <p className="text-gray-300 text-base">
             {description}
           </p>
         )}
-      </motion.div>
+      </div>
 
-      {/* Rating Scale */}
-      <div className="relative">
-        <motion.div
-          className="flex justify-center items-center space-x-2 md:space-x-4 mb-8"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
+      {/* Rating Scale Container */}
+      <div className="relative overflow-hidden">
+        <div className="flex justify-center items-center space-x-1 md:space-x-2 mb-6">
           {Array.from({ length: maxRating }, (_, index) => {
             const rating = index + 1;
             const isActive = rating <= currentDisplayRating;
@@ -114,60 +98,59 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
             const getButtonStyles = () => {
               if (isActive) {
                 if (motivationalMessage.color === 'accent-green') {
-                  return 'bg-accent-green border-accent-green text-black shadow-lg';
+                  return 'bg-accent-green border-accent-green text-black shadow-md';
                 } else if (motivationalMessage.color === 'accent-blue') {
-                  return 'bg-accent-blue border-accent-blue text-black shadow-lg';
+                  return 'bg-accent-blue border-accent-blue text-black shadow-md';
                 } else if (motivationalMessage.color === 'accent-orange') {
-                  return 'bg-accent-orange border-accent-orange text-black shadow-lg';
+                  return 'bg-accent-orange border-accent-orange text-black shadow-md';
                 }
               }
-              return 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400';
+              return 'bg-transparent border-gray-600 text-gray-400';
             };
 
             return (
-              <motion.button
-                key={rating}
-                className={`
-                  relative w-12 h-12 md:w-16 md:h-16 rounded-full border-2 font-bold text-lg md:text-xl
-                  transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary-dark
-                  ${getButtonStyles()}
-                `}
-                whileHover={{ 
-                  scale: 1.1,
-                }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleRatingClick(rating)}
-                onMouseEnter={() => handleRatingHover(rating)}
-                onMouseLeave={() => setHoveredRating(0)}
-              >
-                {rating}
-                
-                {/* Glow effect */}
-                <motion.div
-                  className="absolute inset-0 rounded-full"
-                  animate={{
-                    boxShadow: isActive 
-                      ? `0 0 20px rgba(0, 212, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1)`
-                      : '0 0 0px transparent'
-                  }}
-                  transition={{ duration: 0.3 }}
-                />
+              <div key={rating} className="relative">
+                <motion.button
+                  className={`
+                    relative w-10 h-10 md:w-12 md:h-12 rounded-full border-2 font-bold text-sm md:text-base
+                    transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400/50
+                    ${getButtonStyles()}
+                  `}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleRatingClick(rating)}
+                >
+                  {rating}
+                  
+                  {/* Subtle glow effect */}
+                  {isActive && (
+                    <div 
+                      className="absolute inset-0 rounded-full opacity-30"
+                      style={{
+                        boxShadow: `0 0 8px ${
+                          motivationalMessage.color === 'accent-green' ? '#10b981' :
+                          motivationalMessage.color === 'accent-blue' ? '#00d4ff' :
+                          '#f59e0b'
+                        }`
+                      }}
+                    />
+                  )}
+                </motion.button>
 
-                {/* Particle explosion on selection */}
+                {/* Contained particle explosion */}
                 <AnimatePresence>
                   {showParticles && isSelected && rating === selectedRating && (
-                    <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
                       {generateParticles()}
                     </div>
                   )}
                 </AnimatePresence>
-              </motion.button>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
 
         {/* Rating Labels */}
-        <div className="flex justify-between text-sm text-gray-400 mb-6">
+        <div className="flex justify-between text-xs text-gray-500 mb-4">
           <span>Poor</span>
           <span>Excellent</span>
         </div>
@@ -176,26 +159,22 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
         <AnimatePresence>
           {currentDisplayRating > 0 && (
             <motion.div
-              className="text-center mb-6"
-              initial={{ opacity: 0, y: 20 }}
+              className="text-center mb-4"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              <motion.div
-                className={`text-6xl md:text-8xl font-bold mb-2 ${
+              <div
+                className={`text-3xl md:text-4xl font-bold mb-1 ${
                   motivationalMessage.color === 'accent-green' ? 'text-accent-green' :
                   motivationalMessage.color === 'accent-blue' ? 'text-accent-blue' :
                   'text-accent-orange'
                 }`}
-                animate={{ 
-                  scale: [1, 1.1, 1]
-                }}
-                transition={{ duration: 0.6 }}
               >
                 {currentDisplayRating}
-              </motion.div>
-              <div className="text-gray-300 text-lg">
+              </div>
+              <div className="text-gray-400 text-sm">
                 out of {maxRating}
               </div>
             </motion.div>
@@ -206,66 +185,57 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
         <AnimatePresence>
           {showMotivationalMessage && currentDisplayRating > 0 && motivationalMessage.text && (
             <motion.div
-              className="text-center"
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: -20 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
+              className="text-center mb-4"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
             >
-              <motion.div
-                className={`inline-block px-6 py-3 rounded-full glass-dark border ${
+              <div
+                className={`inline-block px-4 py-2 rounded-full glass-dark border ${
                   motivationalMessage.color === 'accent-green' ? 'border-accent-green/30' :
                   motivationalMessage.color === 'accent-blue' ? 'border-accent-blue/30' :
                   'border-accent-orange/30'
                 }`}
-                animate={{
-                  boxShadow: `0 0 20px rgba(0, 212, 255, 0.2)`
-                }}
               >
-                <motion.p
-                  className={`font-semibold text-lg ${
+                <p
+                  className={`font-medium text-sm ${
                     motivationalMessage.color === 'accent-green' ? 'text-accent-green' :
                     motivationalMessage.color === 'accent-blue' ? 'text-accent-blue' :
                     'text-accent-orange'
                   }`}
-                  animate={{
-                    scale: [1, 1.05, 1]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
                 >
                   {motivationalMessage.text}
-                </motion.p>
-              </motion.div>
+                </p>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Interactive Background Elements */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Subtle Background Elements */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
           {currentDisplayRating > 0 && (
             <>
-              {/* Floating elements based on rating */}
-              {Array.from({ length: Math.min(currentDisplayRating, 5) }, (_, i) => (
+              {Array.from({ length: Math.min(currentDisplayRating, 3) }, (_, i) => (
                 <motion.div
                   key={i}
-                  className={`absolute w-4 h-4 rounded-full ${
-                    motivationalMessage.color === 'accent-green' ? 'bg-accent-green/20' :
-                    motivationalMessage.color === 'accent-blue' ? 'bg-accent-blue/20' :
-                    'bg-accent-orange/20'
+                  className={`absolute w-2 h-2 rounded-full opacity-20 ${
+                    motivationalMessage.color === 'accent-green' ? 'bg-accent-green' :
+                    motivationalMessage.color === 'accent-blue' ? 'bg-accent-blue' :
+                    'bg-accent-orange'
                   }`}
                   style={{
-                    left: `${20 + i * 15}%`,
-                    top: `${30 + (i % 2) * 40}%`
+                    left: `${25 + i * 20}%`,
+                    top: `${20 + (i % 2) * 30}%`
                   }}
                   animate={{
-                    y: [0, -20, 0],
-                    opacity: [0.3, 0.7, 0.3],
-                    scale: [1, 1.2, 1]
+                    y: [0, -8, 0],
+                    opacity: [0.1, 0.3, 0.1],
                   }}
                   transition={{
-                    duration: 3,
+                    duration: 2,
                     repeat: Infinity,
-                    delay: i * 0.5
+                    delay: i * 0.3
                   }}
                 />
               ))}
@@ -278,13 +248,13 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
       <AnimatePresence>
         {selectedRating > 0 && (
           <motion.div
-            className="text-center mt-8 p-4 glass-dark rounded-lg"
+            className="text-center mt-4 p-3 glass-dark rounded-lg"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <p className="text-gray-300">
+            <p className="text-gray-300 text-sm">
               You rated this <span className={`font-semibold ${
                 motivationalMessage.color === 'accent-green' ? 'text-accent-green' :
                 motivationalMessage.color === 'accent-blue' ? 'text-accent-blue' :
@@ -293,7 +263,7 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
                 {selectedRating} out of {maxRating}
               </span>
             </p>
-            <p className="text-sm text-gray-400 mt-2">
+            <p className="text-xs text-gray-400 mt-1">
               {selectedRating >= 8 && "This feedback means a lot! Thank you for recognizing the effort."}
               {selectedRating >= 6 && selectedRating < 8 && "Great to hear! I'll keep working to make it even better."}
               {selectedRating >= 4 && selectedRating < 6 && "Thanks for the honest feedback. I'll focus on improving this area."}
