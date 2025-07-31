@@ -191,7 +191,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
               For development testing:
             </p>
             <div className="text-xs text-gray-300 space-y-1">
-              
+              <div>Username: <span className="text-accent-blue">vikram</span></div>
+              <div>Password: <span className="text-accent-blue">admin123</span></div>
             </div>
             <p className="text-xs text-gray-500 mt-2">
               (Create admin user in database first)

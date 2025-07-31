@@ -29,7 +29,7 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({ onNext, onBack }) => 
   const formFields = [
     {
       key: 'name' as keyof StudentInfo,
-      // label: 'Your Full Name',
+      label: 'Your Full Name',
       type: 'text',
       placeholder: 'Enter your full name',
       icon: '👤',
@@ -43,7 +43,7 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({ onNext, onBack }) => 
     },
     {
       key: 'phoneNumber' as keyof StudentInfo,
-      // label: 'Phone Number',
+      label: 'Phone Number',
       type: 'tel',
       placeholder: 'Enter your phone number',
       icon: '📱',
@@ -59,7 +59,7 @@ const StudentInfoForm: React.FC<StudentInfoFormProps> = ({ onNext, onBack }) => 
     },
     {
       key: 'email' as keyof StudentInfo,
-      // label: 'Email Address (Optional)',
+      label: 'Email Address (Optional)',
       type: 'email',
       placeholder: 'your@email.com',
       icon: '📧',

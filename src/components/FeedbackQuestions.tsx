@@ -227,171 +227,180 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
 
       case 'boolean':
         return (
-          <div className="text-center overflow-hidden">
-            {/* Contained Dynamic Particles */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <DynamicParticles 
-                intensity={0.3} 
-                color="#00d4ff" 
-                trigger={particleTrigger}
-              />
-            </div>
+          <div className="text-center relative">
+            {/* Dynamic Particles */}
+            <DynamicParticles 
+              intensity={0.5} 
+              color="#00d4ff" 
+              trigger={particleTrigger}
+            />
             
-            <div className="relative z-10">
-              <div className="mb-4">
-                <TypewriterText
-                  text={currentQuestionData.question}
-                  className="text-xl md:text-2xl font-bold text-white lewish-text"
-                  speed={30}
-                  onComplete={() => setShowTypewriter(false)}
-                />
-              </div>
-              
-              <motion.p 
-                className="text-gray-300 text-base mb-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: showTypewriter ? 0 : 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                {currentQuestionData.description}
-              </motion.p>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: showTypewriter ? 0 : 1, y: showTypewriter ? 20 : 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                <InteractiveToggle
-                  options={[
-                    { value: true, label: 'Yes, Please!', icon: '👍', color: 'accent-green', description: 'I would love more real-world examples' },
-                    { value: false, label: "No, Thanks", icon: "👎", color: "accent-orange", description: "Current balance is perfect" }
-                  ]}
-                  value={feedbackData[currentQuestionData.key] as boolean}
-                  onChange={(value) => handleBooleanChoice(value as boolean)}
-                  variant="cards"
-                  className="max-w-xl mx-auto"
-                />
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4"
+            >
+              <TypewriterText
+                text={currentQuestionData.question}
+                className="text-2xl md:text-3xl font-bold text-white lewish-text"
+                speed={30}
+                onComplete={() => setShowTypewriter(false)}
+              />
+            </motion.div>
+            
+            <motion.p 
+              className="text-gray-300 text-lg mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: showTypewriter ? 0 : 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {currentQuestionData.description}
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: showTypewriter ? 0 : 1, scale: showTypewriter ? 0.8 : 1 }}
+              transition={{ delay: 1 }}
+            >
+              <InteractiveToggle
+                options={[
+                  { value: true, label: 'Yes, Please!', icon: '👍', color: 'accent-green', description: 'I would love more real-world examples' },
+                  { value: false, label: "No, Thanks", icon: "👎", color: "accent-orange", description: "Current balance is perfect" }
+                ]}
+                value={feedbackData[currentQuestionData.key] as boolean}
+                onChange={(value) => handleBooleanChoice(value as boolean)}
+                variant="cards"
+                className="max-w-2xl mx-auto"
+              />
+            </motion.div>
           </div>
         );
 
       case 'choice':
         return (
-          <div className="text-center overflow-hidden">
-            {/* Contained Dynamic Particles */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <DynamicParticles 
-                intensity={0.2} 
-                color="#39ff14" 
-                trigger={particleTrigger}
-              />
-            </div>
+          <div className="text-center relative">
+            {/* Dynamic Particles */}
+            <DynamicParticles 
+              intensity={0.3} 
+              color="#39ff14" 
+              trigger={particleTrigger}
+            />
             
-            <div className="relative z-10">
-              <div className="mb-4">
-                <TypewriterText
-                  text={currentQuestionData.question}
-                  className="text-xl md:text-2xl font-bold text-white lewish-text"
-                  speed={25}
-                  onComplete={() => setShowTypewriter(false)}
-                />
-              </div>
-              
-              <motion.p 
-                className="text-gray-300 text-base mb-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: showTypewriter ? 0 : 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                {currentQuestionData.description}
-              </motion.p>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: showTypewriter ? 0 : 1, y: showTypewriter ? 20 : 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                <InteractiveToggle
-                  options={currentQuestionData.options?.map(option => ({
-                    value: option.value,
-                    label: option.label,
-                    color: option.color,
-                    description: option.value === 'TOO_FAST' ? 'Please slow down a bit' :
-                                option.value === 'PERFECT' ? 'The pace is just right' :
-                                'Could go a bit faster'
-                  })) || []}
-                  value={feedbackData[currentQuestionData.key] as string}
-                  onChange={(value) => handleChoiceSelect(value as string)}
-                  variant="cards"
-                  className="max-w-2xl mx-auto"
-                />
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4"
+            >
+              <TypewriterText
+                text={currentQuestionData.question}
+                className="text-2xl md:text-3xl font-bold text-white lewish-text"
+                speed={25}
+                onComplete={() => setShowTypewriter(false)}
+              />
+            </motion.div>
+            
+            <motion.p 
+              className="text-gray-300 text-lg mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: showTypewriter ? 0 : 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {currentQuestionData.description}
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: showTypewriter ? 0 : 1, scale: showTypewriter ? 0.8 : 1 }}
+              transition={{ delay: 1 }}
+            >
+              <InteractiveToggle
+                options={currentQuestionData.options?.map(option => ({
+                  value: option.value,
+                  label: option.label,
+                  color: option.color,
+                  description: option.value === 'TOO_FAST' ? 'Please slow down a bit' :
+                              option.value === 'PERFECT' ? 'The pace is just right' :
+                              'Could go a bit faster'
+                })) || []}
+                value={feedbackData[currentQuestionData.key] as string}
+                onChange={(value) => handleChoiceSelect(value as string)}
+                variant="cards"
+                className="max-w-3xl mx-auto"
+              />
+            </motion.div>
           </div>
         );
 
       case 'text':
         return (
-          <div className="text-center max-w-xl mx-auto overflow-hidden">
-            {/* Contained Dynamic Particles */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <DynamicParticles 
-                intensity={0.1} 
-                color="#ff6b35" 
-                trigger={particleTrigger}
-              />
-            </div>
+          <div className="text-center max-w-2xl mx-auto relative">
+            {/* Dynamic Particles */}
+            <DynamicParticles 
+              intensity={0.2} 
+              color="#ff6b35" 
+              trigger={particleTrigger}
+            />
             
-            <div className="relative z-10">
-              <div className="mb-4">
-                <TypewriterText
-                  text={currentQuestionData.question}
-                  className="text-xl md:text-2xl font-bold text-white lewish-text"
-                  speed={20}
-                  onComplete={() => setShowTypewriter(false)}
-                />
-              </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4"
+            >
+              <TypewriterText
+                text={currentQuestionData.question}
+                className="text-2xl md:text-3xl font-bold text-white lewish-text"
+                speed={20}
+                onComplete={() => setShowTypewriter(false)}
+              />
+            </motion.div>
+            
+            <motion.p 
+              className="text-gray-300 text-lg mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: showTypewriter ? 0 : 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {currentQuestionData.description}
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: showTypewriter ? 0 : 1, scale: showTypewriter ? 0.95 : 1 }}
+              transition={{ delay: 1 }}
+            >
+              <motion.textarea
+                className="w-full p-4 glass-dark rounded-lg border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue resize-none transition-all duration-300"
+                rows={currentQuestionData.multiline ? 4 : 2}
+                placeholder={currentQuestionData.key === 'futureTopics' 
+                  ? 'AI, Machine Learning, IoT, Robotics, etc.' 
+                  : 'Your thoughts and suggestions...'
+                }
+                value={currentQuestionData.key === 'futureTopics' 
+                  ? (feedbackData[currentQuestionData.key] as string[]).join(', ')
+                  : feedbackData[currentQuestionData.key] as string
+                }
+                onChange={(e) => handleTextChange(e.target.value)}
+                whileFocus={{ 
+                  scale: 1.02,
+                  boxShadow: "0 0 20px rgba(0, 212, 255, 0.3)"
+                }}
+              />
               
-              <motion.p 
-                className="text-gray-300 text-base mb-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: showTypewriter ? 0 : 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                {currentQuestionData.description}
-              </motion.p>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: showTypewriter ? 0 : 1, y: showTypewriter ? 20 : 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                <textarea
-                  className="w-full p-4 glass-dark rounded-lg border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue resize-none transition-all duration-300"
-                  rows={currentQuestionData.multiline ? 4 : 2}
-                  placeholder={currentQuestionData.key === 'futureTopics' 
-                    ? 'AI, Machine Learning, IoT, Robotics, etc.' 
-                    : 'Your thoughts and suggestions...'
+              {/* Character count for text areas */}
+              {currentQuestionData.multiline && (
+                <motion.div
+                  className="text-right text-sm text-gray-500 mt-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.5 }}
+                >
+                  {currentQuestionData.key === 'futureTopics' 
+                    ? `${(feedbackData[currentQuestionData.key] as string[]).join(', ').length} characters`
+                    : `${(feedbackData[currentQuestionData.key] as string).length} characters`
                   }
-                  value={currentQuestionData.key === 'futureTopics' 
-                    ? (feedbackData[currentQuestionData.key] as string[]).join(', ')
-                    : feedbackData[currentQuestionData.key] as string
-                  }
-                  onChange={(e) => handleTextChange(e.target.value)}
-                />
-                
-                {/* Character count for text areas */}
-                {currentQuestionData.multiline && (
-                  <div className="text-right text-xs text-gray-500 mt-2">
-                    {currentQuestionData.key === 'futureTopics' 
-                      ? `${(feedbackData[currentQuestionData.key] as string[]).join(', ').length} characters`
-                      : `${(feedbackData[currentQuestionData.key] as string).length} characters`
-                    }
-                  </div>
-                )}
-              </motion.div>
-            </div>
+                </motion.div>
+              )}
+            </motion.div>
           </div>
         );
 
@@ -401,26 +410,26 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden">
-      <div className="w-full max-w-3xl">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <Button 
             variant="secondary" 
             size="sm"
             onClick={onBack}
-            className="mb-4"
+            className="mb-6"
           >
             ← Back to Form
           </Button>
           
           <motion.h1 
-            className="text-2xl md:text-3xl lewish-text text-accent-blue mb-3"
+            className="text-3xl md:text-4xl lewish-text text-accent-blue mb-4"
             animate={{
               textShadow: [
-                "0 0 5px #00d4ff",
                 "0 0 10px #00d4ff",
-                "0 0 5px #00d4ff"
+                "0 0 20px #00d4ff, 0 0 30px #00d4ff",
+                "0 0 10px #00d4ff"
               ]
             }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -428,13 +437,13 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
             FEEDBACK FOR VIKRAM
           </motion.h1>
           
-          <p className="text-gray-300 text-base mb-4">
+          <p className="text-gray-300 text-lg mb-4">
             Welcome, <span className="text-accent-green font-semibold">{studentInfo.name}</span>!
           </p>
 
           {/* Progress Bar */}
-          <div className="max-w-sm mx-auto mb-4">
-            <div className="flex justify-between text-xs text-gray-400 mb-2">
+          <div className="max-w-md mx-auto mb-6">
+            <div className="flex justify-between text-sm text-gray-400 mb-2">
               <span>Question {currentQuestion + 1} of {questions.length}</span>
               <span>{Math.round(progress)}%</span>
             </div>
@@ -443,21 +452,21 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
                 className="h-2 bg-gradient-to-r from-accent-blue to-accent-green rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.5 }}
               />
             </div>
           </div>
         </div>
 
         {/* Question Card */}
-        <Card variant="glass" className="p-6 mb-6 relative overflow-hidden">
+        <Card variant="glass" className="p-8 mb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentQuestion}
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.4 }}
             >
               {renderQuestion()}
             </motion.div>
@@ -468,22 +477,23 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
         <AnimatePresence>
           {submitError && (
             <motion.div
-              className="mb-4"
-              initial={{ opacity: 0, y: -10 }}
+              className="mb-6"
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              exit={{ opacity: 0, y: -20 }}
             >
               <Card variant="glass" className="p-4 border-red-500/50 bg-red-500/10">
                 <div className="flex items-center space-x-3">
-                  <div className="text-red-400 text-lg">⚠️</div>
-                  <div className="flex-1">
-                    <h4 className="text-red-400 font-semibold text-sm">Submission Failed</h4>
-                    <p className="text-red-300 text-xs">{submitError}</p>
+                  <div className="text-red-400 text-xl">⚠️</div>
+                  <div>
+                    <h4 className="text-red-400 font-semibold">Submission Failed</h4>
+                    <p className="text-red-300 text-sm">{submitError}</p>
                   </div>
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => setSubmitError(null)}
+                    className="ml-auto"
                   >
                     ✕
                   </Button>
@@ -508,7 +518,7 @@ const FeedbackQuestions: React.FC<FeedbackQuestionsProps> = ({
             {questions.map((_, index) => (
               <div
                 key={index}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentQuestion
                     ? 'bg-accent-blue scale-125'
                     : index < currentQuestion

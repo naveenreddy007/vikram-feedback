@@ -38,7 +38,17 @@ class ApiService {
 
   constructor() {
     this.isDevelopment = process.env.NODE_ENV === 'development';
-    this.baseUrl = this.isDevelopment ? 'https://vikram-feedback.vercel.app/' : 'https://vikram-feedback.vercel.app/';
+    
+    // Use environment variable for API base URL
+    const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (envUrl) {
+      // Ensure URL doesn't have trailing slash
+      this.baseUrl = envUrl.replace(/\/$/, '');
+    } else {
+      this.baseUrl = this.isDevelopment ? 'http://localhost:3000' : 'https://vikram-feedback.netlify.app';
+    }
+    
+    console.log('API Base URL:', this.baseUrl);
   }
 
   private async request<T>(
@@ -46,7 +56,10 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const url = `${this.baseUrl}${endpoint}`;
+      console.log('Making API request to:', url);
+      
+      const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
           ...options.headers,
@@ -54,17 +67,17 @@ class ApiService {
         ...options,
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error?.message || 'Request failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
+      const data = await response.json();
       return data;
     } catch (error) {
       console.error('API Request failed:', error);
       
-      // Fallback to mock in development if API server is not running
+      // In production, don't use mock data - let it fail properly
       if (this.isDevelopment) {
         console.warn('API server not available, using mock data');
         return this.mockRequest<T>(endpoint, options);
