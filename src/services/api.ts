@@ -45,10 +45,22 @@ class ApiService {
       // Ensure URL doesn't have trailing slash
       this.baseUrl = envUrl.replace(/\/$/, '');
     } else {
-      this.baseUrl = this.isDevelopment ? 'http://localhost:3000' : 'https://vikram-feedback.netlify.app';
+      // Fallback URLs if environment variable is not set
+      if (this.isDevelopment) {
+        this.baseUrl = 'http://localhost:3001';
+      } else {
+        // Try to detect the current domain in production
+        if (typeof window !== 'undefined') {
+          this.baseUrl = window.location.origin;
+        } else {
+          this.baseUrl = 'https://vikram-feedback.vercel.app';
+        }
+      }
     }
     
+    console.log('Environment:', process.env.NODE_ENV);
     console.log('API Base URL:', this.baseUrl);
+    console.log('Environment API URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
   }
 
   private async request<T>(
@@ -77,12 +89,12 @@ class ApiService {
     } catch (error) {
       console.error('API Request failed:', error);
       
-      // In production, don't use mock data - let it fail properly
-      if (this.isDevelopment) {
-        console.warn('API server not available, using mock data');
+      // Only use mock data if the API endpoint doesn't exist (404) in development
+      if (this.isDevelopment && error instanceof Error && error.message.includes('404')) {
+        console.warn('API endpoint not found, using mock data');
         return this.mockRequest<T>(endpoint, options);
       }
-      
+
       throw error;
     }
   }

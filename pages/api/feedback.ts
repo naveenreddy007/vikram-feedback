@@ -18,16 +18,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  if (req.method === 'POST') {
-    // Copy the POST logic from dev-server.js
-    try {
+  try {
+    if (req.method === 'POST') {
+      console.log('Received feedback submission:', req.body);
+      
       const { isValid, errors } = validateFeedback(req.body);
       if (!isValid) {
-        res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid data provided', details: errors }, timestamp: new Date().toISOString() });
+        console.log('Validation failed:', errors);
+        res.status(400).json({ 
+          success: false, 
+          error: { 
+            code: 'VALIDATION_ERROR', 
+            message: 'Invalid data provided', 
+            details: errors 
+          }, 
+          timestamp: new Date().toISOString() 
+        });
         return;
       }
+
       const userAgent = req.headers['user-agent'] || '';
       const deviceType = getDeviceType(userAgent);
+      
+      console.log('Creating feedback record...');
       const feedback = await prisma.studentFeedback.create({
         data: {
           name: req.body.name.trim(),
@@ -45,30 +58,78 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           sessionDuration: req.body.sessionDuration || 0,
         }
       });
-      res.status(201).json({ success: true, data: { id: feedback.id, submittedAt: feedback.submittedAt }, message: 'Feedback submitted successfully', timestamp: new Date().toISOString() });
+      
+      console.log('Feedback created successfully:', feedback.id);
+      res.status(201).json({ 
+        success: true, 
+        data: { 
+          id: feedback.id, 
+          submittedAt: feedback.submittedAt 
+        }, 
+        message: 'Feedback submitted successfully', 
+        timestamp: new Date().toISOString() 
+      });
       return;
-    } catch (error) {
-      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' }, timestamp: new Date().toISOString() });
-      return;
-    }
-  } else if (req.method === 'GET') {
-    // Copy the GET logic
-    try {
+      
+    } else if (req.method === 'GET') {
       const totalFeedback = await prisma.studentFeedback.count();
-      const averageRatings = await prisma.studentFeedback.aggregate({ _avg: { teachingSkills: true, realWorldExplanation: true, overallSatisfaction: true } });
-      const teachingPaceStats = await prisma.studentFeedback.groupBy({ by: ['teachingPace'], _count: { teachingPace: true } });
-      const deviceStats = await prisma.studentFeedback.groupBy({ by: ['deviceType'], _count: { deviceType: true } });
-      const recentFeedback = await prisma.studentFeedback.findMany({ take: 5, orderBy: { submittedAt: 'desc' }, select: { id: true, name: true, submittedAt: true, overallSatisfaction: true } });
-      res.status(200).json({ success: true, data: { totalFeedback, averageRatings: averageRatings._avg, teachingPaceStats, deviceStats, recentFeedback }, timestamp: new Date().toISOString() });
+      const averageRatings = await prisma.studentFeedback.aggregate({ 
+        _avg: { 
+          teachingSkills: true, 
+          realWorldExplanation: true, 
+          overallSatisfaction: true 
+        } 
+      });
+      const teachingPaceStats = await prisma.studentFeedback.groupBy({ 
+        by: ['teachingPace'], 
+        _count: { teachingPace: true } 
+      });
+      const deviceStats = await prisma.studentFeedback.groupBy({ 
+        by: ['deviceType'], 
+        _count: { deviceType: true } 
+      });
+      const recentFeedback = await prisma.studentFeedback.findMany({ 
+        take: 5, 
+        orderBy: { submittedAt: 'desc' }, 
+        select: { 
+          id: true, 
+          name: true, 
+          submittedAt: true, 
+          overallSatisfaction: true 
+        } 
+      });
+      
+      res.status(200).json({ 
+        success: true, 
+        data: { 
+          totalFeedback, 
+          averageRatings: averageRatings._avg, 
+          teachingPaceStats, 
+          deviceStats, 
+          recentFeedback 
+        }, 
+        timestamp: new Date().toISOString() 
+      });
       return;
-    } catch (error) {
-      res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' }, timestamp: new Date().toISOString() });
+      
+    } else {
+      res.setHeader('Allow', ['POST', 'GET', 'OPTIONS']);
+      res.status(405).end(`Method ${req.method} Not Allowed`);
       return;
     }
-  } else {
-    res.setHeader('Allow', ['POST', 'GET', 'OPTIONS']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+  } catch (error) {
+    console.error('API Error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: { 
+        code: 'INTERNAL_SERVER_ERROR', 
+        message: error instanceof Error ? error.message : 'An unexpected error occurred'
+      }, 
+      timestamp: new Date().toISOString() 
+    });
     return;
+  } finally {
+    await prisma.$disconnect();
   }
 }
 

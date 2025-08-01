@@ -9,11 +9,14 @@
     "start": "next start",
     "lint": "next lint",
     "create-admin": "node scripts/create-admin.js",
+    "update-env": "node scripts/update-env.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@netlify/functions": "^2.8.1",
     "@prisma/client": "^6.12.0",
     "@tailwindcss/forms": "^0.5.10",
     "@types/three": "^0.178.1",

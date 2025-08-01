@@ -58,11 +58,12 @@ const validateFeedback = (data: any): { isValid: boolean; errors: string[] } => 
 };
 
 export const handler: Handler = async (event, context) => {
-  // Set CORS headers
+  // Set CORS headers to allow all origins
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Credentials': 'false',
   };
 
   if (event.httpMethod === 'OPTIONS') {
